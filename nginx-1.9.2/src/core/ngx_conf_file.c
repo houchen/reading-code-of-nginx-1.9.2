@@ -179,7 +179,7 @@ ngx_conf_parse(ngx_conf_t *cf, ngx_str_t *filename)  //参考:http://blog.chinauni
             return NGX_CONF_ERROR;
         }
 
-        
+
         /* 保存cf->conf_file 的上文 */
         prev = cf->conf_file; //解析该配置文件之前的配置用prev暂存
 
@@ -365,7 +365,7 @@ done:
                           filename->data);
             rc = NGX_ERROR;
         }
-        
+
         /* 恢复上下文 */
         cf->conf_file = prev;
     }
@@ -401,15 +401,15 @@ ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
     char buf[2560];
     char tmp[256];
     memset(buf, 0, sizeof(buf));
-   
+
    for(ia = 0; ia < cf->args->nelts; ia++) {
         memset(tmp, 0, sizeof(tmp));
         snprintf(tmp, sizeof(tmp), "%s ", name[ia].data);
         strcat(buf, tmp);
     }
     //printf("yang test:%p %s <%s, %u>\n", cf->ctx, buf, __FUNCTION__, __LINE__); //这个打印出来的内容为整行的内容，如yang test:error_log logs/error.log debug   <ngx_conf_handler, 407>
-   
-   
+
+
     found = 0;
 
     for (i = 0; ngx_modules[i]; i++) { //所有模块都扫描一遍
@@ -417,7 +417,7 @@ ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
         if (cmd == NULL) {
             continue;
         }
-       
+
         for ( /* void */ ; cmd->name.len; cmd++) {
 
             if (name->len != cmd->name.len) {
@@ -496,7 +496,7 @@ ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
                 该函数中开辟空间，并让conf_ctx[]数组里面的具体成员指针指向该空间，从而使http{}空间和ngx_cycle_s关联起来 */
 
             /* 属于NGX_CORE_MODULE的一级类型在第一个if里面执行，属于NGX_HTTP_MODULE的二级类型在第三个if执行  */
-            
+
             //conf为开辟的main_conf  srv_conf loc_conf空间指针，真正的空间为各个模块module的ctx成员中,
             //可以参考ngx_http_mytest_config_module_ctx, http{}对应的空间开辟在ngx_http_block
             //注意:通过在ngx_init_cycle中打印conf.ctx以及在这里打印cf->cxt，发现所有第一层(http{}外的配置，包括http这一行)的地址是一样的，也就是这里的conf.ctx始终等于cycle->conf_ctx;
@@ -506,10 +506,10 @@ ngx_conf_handler(ngx_conf_t *cf, ngx_int_t last)
                 //http{]这一行的时候，也走这里，从而确定http{}内部解析项在cf->ctx数组中的位置，从而确定了在一级NGX_CORE_MODULE类型cf->ctx的数组位置，并在后面的set函数中创建空间，使具体数组[]成员指向这部分空间
                 //当解析到http{}内部的第一行的时候，将走下面的第三个if语句，从而确定在NGX_HTTP_MODULE类型在
                 conf = ((void **) cf->ctx)[ngx_modules[i]->index]; //ngx_core_commands对应的空间分配的地方参考ngx_core_module->ngx_core_module_ctx
-                
+
             } else if (cmd->type & NGX_MAIN_CONF) { //例如ngx_errlog_commands  ngx_events_commands  ngx_conf_commands  这些配置command一般只有一个参数
                 conf = &(((void **) cf->ctx)[ngx_modules[i]->index]); //指向ngx_cycle_s->conf_ctx
-                 
+
             } else if (cf->ctx) { //大部分走这里，例如http{}内部行走这里，http本行走上面的第一个if
      /*http{}内部行相关命令可以参考:ngx_http_core_commands,通过这些命令里面的NGX_HTTP_MAIN_CONF_OFFSET NGX_HTTP_SRV_CONF_OFFSET NGX_HTTP_LOC_CONF_OFFSET
      可以确定出该命令行的地址对应在ngx_http_conf_ctx_t中的地址空间头部指针位置, 就是确定出该命令为ngx_http_conf_ctx的成员main srv loc中的那一个
@@ -578,14 +578,14 @@ rv = cmd->set(cf, cmd, conf);
 /*
  首先明确,什么是一个token: 
  token是处在两个相邻空格,换行符,双引号,单引号等之间的字符串. 
-*/  
+*/
 
 /****************************************** 
 1.读取文件内容,每次读取一个buf大小(4K),如果文件内容不足4K则全部读取到buf中. 
 2.扫描buf中的内容,每次扫描一个token就会存入cf->args中,然后返回. 
 3.返回后调用ngx_conf_parse函数会调用*cf->handler和ngx_conf_handler(cf, rc)函数处理. 
 3.如果是复杂配置项,会调用上次执行的状态继续解析配置文件. 
-.*****************************************/ 
+.*****************************************/
 
 static ngx_int_t
 ngx_conf_read_token(ngx_conf_t *cf)//参考http://blog.chinaunix.net/uid-26335251-id-3483044.html
@@ -601,12 +601,12 @@ ngx_conf_read_token(ngx_conf_t *cf)//参考http://blog.chinaunix.net/uid-26335251-
 
     found = 0;//标志位,表示找到一个token 
 
-    
+
     /************************* 
     标志位,表示此时需要一个token分隔符,即token前面的分隔符 
     一般刚刚解析完一对双引号或者单引号,此时设置need_space为1, 
     表示期待下一个字符为分隔符 
-    **********************/  
+    **********************/
     need_space = 0;
     last_space = 1; //标志位,表示上一个字符为token分隔符   
     sharp_comment = 0; //注释(#)   
@@ -667,7 +667,7 @@ ngx_conf_read_token(ngx_conf_t *cf)//参考http://blog.chinaunix.net/uid-26335251-
                     return NGX_ERROR;
                 }
 
-                
+
                 //参数太多,可能缺少右双引号或者右单引号.   
                 ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                                    "too long parameter, probably "
@@ -1569,6 +1569,7 @@ char*(*set)(ngx_conf_t *cf, ngx_commandj 'vcmd,void *conf)
 注意在ngx_http_mytest_create loc conf创建结构体时，如果想使用ngx_conf_set_num_slot,
 必须把my_num初始化为NGX_CONF_UNSET宏  否则ngx_conf_set_num_slot在解析时会报错。
 */
+/**在ngx_command_t中遇见配置则回调了本函数**/
 char *
 ngx_conf_set_num_slot(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
@@ -1578,13 +1579,14 @@ ngx_conf_set_num_slot(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     ngx_str_t        *value;
     ngx_conf_post_t  *post;
 
-
+    //p是自己的配置类型，需要保存解析后结果的地方
     np = (ngx_int_t *) (p + cmd->offset);
 
     if (*np != NGX_CONF_UNSET) {
         return "is duplicate";
     }
 
+    //elts是个数组，数组保存每个配置后面的参数值
     value = cf->args->elts;
     *np = ngx_atoi(value[1].data, value[1].len);
     if (*np == NGX_ERROR) {

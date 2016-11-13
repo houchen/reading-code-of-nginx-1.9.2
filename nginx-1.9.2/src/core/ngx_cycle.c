@@ -11,28 +11,31 @@
 
 
 static void ngx_destroy_cycle_pools(ngx_conf_t *conf);
+
 static ngx_int_t ngx_init_zone_pool(ngx_cycle_t *cycle,
-    ngx_shm_zone_t *shm_zone);
+                                    ngx_shm_zone_t *shm_zone);
+
 static ngx_int_t ngx_test_lockfile(u_char *file, ngx_log_t *log);
+
 static void ngx_clean_old_cycles(ngx_event_t *ev);
 
 //³õÊ¼»¯²Î¿¼ngx_init_cycle£¬×îÖÕÓÐÒ»¸öÈ«¾ÖÀàÐÍµÄngx_cycle_s£¬¼´ngx_cycle
-volatile ngx_cycle_t  *ngx_cycle; //ngx_cycle = cycle;  ¸³Öµ¼ûmain->ngx_init_cycle
-ngx_array_t            ngx_old_cycles;
+volatile ngx_cycle_t *ngx_cycle; //ngx_cycle = cycle;  ¸³Öµ¼ûmain->ngx_init_cycle
+ngx_array_t ngx_old_cycles;
 
-static ngx_pool_t     *ngx_temp_pool;
-static ngx_event_t     ngx_cleaner_event;
+static ngx_pool_t *ngx_temp_pool;
+static ngx_event_t ngx_cleaner_event;
 
-ngx_uint_t             ngx_test_config;
-ngx_uint_t             ngx_dump_config;
-ngx_uint_t             ngx_quiet_mode;
+ngx_uint_t ngx_test_config;
+ngx_uint_t ngx_dump_config;
+ngx_uint_t ngx_quiet_mode;
 
 
 /* STUB NAME */
-static ngx_connection_t  dumb;
+static ngx_connection_t dumb;
 /* STUB */
 
-/*
+/**
 ±í8-2 ngx_cycle_t½á¹¹ÌåÖ§³ÖµÄÖ÷Òª·½·¨
 ©³©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©×©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©×©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©¥©·
 ©§    ·½·¨Ãû                        ©§    ²ÎÊýº¬Òå                          ©§    Ö´ÐÐÒâÒå                          ©§
@@ -138,23 +141,22 @@ static ngx_connection_t  dumb;
 */
 
 ngx_cycle_t *
-ngx_init_cycle(ngx_cycle_t *old_cycle)
-{
-    void                *rv;
-    char               **senv, **env;
-    ngx_uint_t           i, n;
-    ngx_log_t           *log;
-    ngx_time_t          *tp;
-    ngx_conf_t           conf;
-    ngx_pool_t          *pool;
-    ngx_cycle_t         *cycle, **old;
-    ngx_shm_zone_t      *shm_zone, *oshm_zone;
-    ngx_list_part_t     *part, *opart;
-    ngx_open_file_t     *file;
-    ngx_listening_t     *ls, *nls;
-    ngx_core_conf_t     *ccf, *old_ccf;
-    ngx_core_module_t   *module; //¶ÔÓ¦µÄÊÇºËÐÄÄ£¿éNGX_CORE_MODULE
-    char                 hostname[NGX_MAXHOSTNAMELEN];
+ngx_init_cycle(ngx_cycle_t *old_cycle) {
+    void *rv;
+    char **senv, **env;
+    ngx_uint_t i, n;
+    ngx_log_t *log;
+    ngx_time_t *tp;
+    ngx_conf_t conf;
+    ngx_pool_t *pool;
+    ngx_cycle_t *cycle, **old;
+    ngx_shm_zone_t *shm_zone, *oshm_zone;
+    ngx_list_part_t *part, *opart;
+    ngx_open_file_t *file;
+    ngx_listening_t *ls, *nls;
+    ngx_core_conf_t *ccf, *old_ccf;
+    ngx_core_module_t *module; //¶ÔÓ¦µÄÊÇºËÐÄÄ£¿éNGX_CORE_MODULE
+    char hostname[NGX_MAXHOSTNAMELEN];
 
     ngx_timezone_update();
 
@@ -234,8 +236,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
 
     if (ngx_array_init(&cycle->config_dump, pool, 1, sizeof(ngx_conf_dump_t))
-        != NGX_OK)
-    {
+        != NGX_OK) {
         ngx_destroy_pool(pool);
         return NULL;
     }
@@ -251,8 +252,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     }
 
     if (ngx_list_init(&cycle->open_files, pool, n, sizeof(ngx_open_file_t))
-        != NGX_OK)
-    {
+        != NGX_OK) {
         ngx_destroy_pool(pool);
         return NULL;
     }
@@ -260,8 +260,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
     if (old_cycle->shared_memory.part.nelts) {
         n = old_cycle->shared_memory.part.nelts;
-        for (part = old_cycle->shared_memory.part.next; part; part = part->next)
-        {
+        for (part = old_cycle->shared_memory.part.next; part; part = part->next) {
             n += part->nelts;
         }
 
@@ -269,9 +268,8 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         n = 1;
     }
 
-    if (ngx_list_init(&cycle->shared_memory, pool, n, sizeof(ngx_shm_zone_t)) 
-        != NGX_OK)
-    {
+    if (ngx_list_init(&cycle->shared_memory, pool, n, sizeof(ngx_shm_zone_t))
+        != NGX_OK) {
         ngx_destroy_pool(pool);
         return NULL;
     }
@@ -338,7 +336,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
                 ngx_destroy_pool(pool);
                 return NULL;
             }
-            
+
             cycle->conf_ctx[ngx_modules[i]->index] = rv;
         }
     }
@@ -376,13 +374,13 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         ngx_destroy_cycle_pools(&conf);
         return NULL;
     }
-        
+
     if (ngx_conf_parse(&conf, &cycle->conf_file) != NGX_CONF_OK) {//ÕâÊ±ºòµÄconfÖ¸ÏòµÄÊÇcycle
         environ = senv;
         ngx_destroy_cycle_pools(&conf);
         return NULL;
     }
-        
+
     if (ngx_test_config && !ngx_quiet_mode) {
         ngx_log_stderr(0, "the configuration file %s syntax is ok",
                        cycle->conf_file.data);
@@ -400,8 +398,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
         if (module->init_conf) {
             if (module->init_conf(cycle, cycle->conf_ctx[ngx_modules[i]->index])
-                == NGX_CONF_ERROR)
-            {
+                == NGX_CONF_ERROR) {
                 environ = senv;
                 ngx_destroy_cycle_pools(&conf);
                 return NULL;
@@ -431,8 +428,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         old_ccf = (ngx_core_conf_t *) ngx_get_conf(old_cycle->conf_ctx,
                                                    ngx_core_module);
         if (ccf->pid.len != old_ccf->pid.len
-            || ngx_strcmp(ccf->pid.data, old_ccf->pid.data) != 0)
-        {
+            || ngx_strcmp(ccf->pid.data, old_ccf->pid.data) != 0) {
             /* new pid file name */
 
             if (ngx_create_pidfile(&ccf->pid, log) != NGX_OK) {
@@ -488,7 +484,8 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
         if (file[i].fd == NGX_INVALID_FILE) {
             ngx_log_error(NGX_LOG_EMERG, log, ngx_errno,
-                          ngx_open_file_n " \"%s\" failed",
+                          ngx_open_file_n
+                                  " \"%s\" failed",
                           file[i].name.data);
             goto failed;
         }
@@ -552,23 +549,20 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
             if (ngx_strncmp(shm_zone[i].shm.name.data,
                             oshm_zone[n].shm.name.data,
                             shm_zone[i].shm.name.len) //
-                != 0)
-            {
+                != 0) {
                 continue;
             }
 
             if (shm_zone[i].tag == oshm_zone[n].tag
                 && shm_zone[i].shm.size == oshm_zone[n].shm.size
-                && !shm_zone[i].noreuse)
-            {
+                && !shm_zone[i].noreuse) {
                 shm_zone[i].shm.addr = oshm_zone[n].shm.addr;
 #if (NGX_WIN32)
                 shm_zone[i].shm.handle = oshm_zone[n].shm.handle;
 #endif
 
                 if (shm_zone[i].init(&shm_zone[i], oshm_zone[n].data)
-                    != NGX_OK)
-                {
+                    != NGX_OK) {
                     goto failed;
                 }
 
@@ -592,7 +586,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
             goto failed;
         }
 
-    shm_zone_found:
+        shm_zone_found:
 
         continue;
     }
@@ -624,8 +618,7 @@ listeningÊý×éÖÐÁË¡£ÕâÒ»²½Öè¾ÍÊÇ°´ÕÕlisteningÊý×éÖÐµÄÃ¿Ò»¸öngx_listening_tÔªËØÉèÖ
 
                 if (ngx_cmp_sockaddr(nls[n].sockaddr, nls[n].socklen,
                                      ls[i].sockaddr, ls[i].socklen, 1)
-                    == NGX_OK)
-                {
+                    == NGX_OK) {
                     nls[n].fd = ls[i].fd;
                     nls[n].previous = &ls[i];
                     ls[i].remain = 1;
@@ -775,20 +768,19 @@ listeningÊý×éÖÐÁË¡£ÕâÒ»²½Öè¾ÍÊÇ°´ÕÕlisteningÊý×éÖÐµÄÃ¿Ò»¸öngx_listening_tÔªËØÉèÖ
                 && ngx_strncmp(oshm_zone[i].shm.name.data,
                                shm_zone[n].shm.name.data,
                                oshm_zone[i].shm.name.len)
-                == 0)
-            {
+                   == 0) {
                 goto live_shm_zone;
             }
         }
 
         ngx_shm_free(&oshm_zone[i].shm);
 
-    live_shm_zone:
+        live_shm_zone:
 
         continue;
     }
 
-old_shm_zone_done:
+    old_shm_zone_done:
 
 
     /* close the unnecessary listening sockets */
@@ -802,14 +794,15 @@ old_shm_zone_done:
 
         if (ngx_close_socket(ls[i].fd) == -1) {
             ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
-                          ngx_close_socket_n " listening socket on %V failed",
+                          ngx_close_socket_n
+                                  " listening socket on %V failed",
                           &ls[i].addr_text);
         }
 
 #if (NGX_HAVE_UNIX_DOMAIN)
 
         if (ls[i].sockaddr->sa_family == AF_UNIX) {
-            u_char  *name;
+            u_char *name;
 
             name = ls[i].addr_text.data + sizeof("unix:") - 1;
 
@@ -818,7 +811,8 @@ old_shm_zone_done:
 
             if (ngx_delete_file(name) == NGX_FILE_ERROR) {
                 ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_socket_errno,
-                              ngx_delete_file_n " %s failed", name);
+                              ngx_delete_file_n
+                                      " %s failed", name);
             }
         }
 
@@ -848,14 +842,15 @@ old_shm_zone_done:
 
         if (ngx_close_file(file[i].fd) == NGX_FILE_ERROR) {
             ngx_log_error(NGX_LOG_EMERG, log, ngx_errno,
-                          ngx_close_file_n " \"%s\" failed",
+                          ngx_close_file_n
+                                  " \"%s\" failed",
                           file[i].name.data);
         }
     }
 
     ngx_destroy_pool(conf.temp_pool);
 //Èç¹ûÊÇµÚÒ»´Î¼ÓÔØ£¬ÔòÂú×ãngx_is_init_cycle¡£Èç¹ûÊÇreloadÈÈÆô¶¯£¬ÔòÔ­À´µÄnginx½ø³ÌµÄngx_process == NGX_PROCESS_MASTER    
-    if (ngx_process == NGX_PROCESS_MASTER || ngx_is_init_cycle(old_cycle)) { 
+    if (ngx_process == NGX_PROCESS_MASTER || ngx_is_init_cycle(old_cycle)) {
 
         /*
          * perl_destruct() frees environ, if it is not the same as it was at
@@ -915,7 +910,7 @@ old_shm_zone_done:
     return cycle;
 
 
-failed:
+    failed:
 
     if (!ngx_is_init_cycle(old_cycle)) {
         old_ccf = (ngx_core_conf_t *) ngx_get_conf(old_cycle->conf_ctx,
@@ -947,7 +942,8 @@ failed:
 
         if (ngx_close_file(file[i].fd) == NGX_FILE_ERROR) {
             ngx_log_error(NGX_LOG_EMERG, log, ngx_errno,
-                          ngx_close_file_n " \"%s\" failed",
+                          ngx_close_file_n
+                                  " \"%s\" failed",
                           file[i].name.data);
         }
     }
@@ -965,7 +961,8 @@ failed:
 
         if (ngx_close_socket(ls[i].fd) == -1) {
             ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
-                          ngx_close_socket_n " %V failed",
+                          ngx_close_socket_n
+                                  " %V failed",
                           &ls[i].addr_text);
         }
     }
@@ -977,18 +974,16 @@ failed:
 
 
 static void
-ngx_destroy_cycle_pools(ngx_conf_t *conf)
-{
+ngx_destroy_cycle_pools(ngx_conf_t *conf) {
     ngx_destroy_pool(conf->temp_pool);
     ngx_destroy_pool(conf->pool);
 }
 
 
 static ngx_int_t
-ngx_init_zone_pool(ngx_cycle_t *cycle, ngx_shm_zone_t *zn)
-{
-    u_char           *file;
-    ngx_slab_pool_t  *sp;
+ngx_init_zone_pool(ngx_cycle_t *cycle, ngx_shm_zone_t *zn) {
+    u_char *file;
+    ngx_slab_pool_t *sp;
 
     //¹²ÏíÄÚ´æµÄÆðÊ¼µØÖ·¿ªÊ¼µÄsizeof(ngx_slab_pool_t)×Ö½ÚÊÇÓÃÀ´´æ´¢¹ÜÀí¹²ÏíÄÚ´æµÄslab pollµÄ
     sp = (ngx_slab_pool_t *) zn->shm.addr; //¹²ÏíÄÚ´æÆðÊ¼µØÖ·
@@ -1001,17 +996,17 @@ ngx_init_zone_pool(ngx_cycle_t *cycle, ngx_shm_zone_t *zn)
 
 #if (NGX_WIN32)
 
-        /* remap at the required address */
+            /* remap at the required address */
 
-        if (ngx_shm_remap(&zn->shm, sp->addr) != NGX_OK) {
-            return NGX_ERROR;
-        }
+            if (ngx_shm_remap(&zn->shm, sp->addr) != NGX_OK) {
+                return NGX_ERROR;
+            }
 
-        sp = (ngx_slab_pool_t *) zn->shm.addr;
+            sp = (ngx_slab_pool_t *) zn->shm.addr;
 
-        if (sp == sp->addr) {
-            return NGX_OK;
-        }
+            if (sp == sp->addr) {
+                return NGX_OK;
+            }
 
 #endif
 
@@ -1052,12 +1047,11 @@ ngx_init_zone_pool(ngx_cycle_t *cycle, ngx_shm_zone_t *zn)
 
 
 ngx_int_t
-ngx_create_pidfile(ngx_str_t *name, ngx_log_t *log)
-{
-    size_t      len;
-    ngx_uint_t  create;
-    ngx_file_t  file;
-    u_char      pid[NGX_INT64_LEN + 2];
+ngx_create_pidfile(ngx_str_t *name, ngx_log_t *log) {
+    size_t len;
+    ngx_uint_t create;
+    ngx_file_t file;
+    u_char pid[NGX_INT64_LEN + 2];
 
     if (ngx_process > NGX_PROCESS_MASTER) {
         return NGX_OK;
@@ -1075,7 +1069,8 @@ ngx_create_pidfile(ngx_str_t *name, ngx_log_t *log)
 
     if (file.fd == NGX_INVALID_FILE) {
         ngx_log_error(NGX_LOG_EMERG, log, ngx_errno,
-                      ngx_open_file_n " \"%s\" failed", file.name.data);
+                      ngx_open_file_n
+                              " \"%s\" failed", file.name.data);
         return NGX_ERROR;
     }
 
@@ -1089,7 +1084,8 @@ ngx_create_pidfile(ngx_str_t *name, ngx_log_t *log)
 
     if (ngx_close_file(file.fd) == NGX_FILE_ERROR) {
         ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                      ngx_close_file_n " \"%s\" failed", file.name.data);
+                      ngx_close_file_n
+                              " \"%s\" failed", file.name.data);
     }
 
     return NGX_OK;
@@ -1097,10 +1093,9 @@ ngx_create_pidfile(ngx_str_t *name, ngx_log_t *log)
 
 
 void
-ngx_delete_pidfile(ngx_cycle_t *cycle)
-{
-    u_char           *name;
-    ngx_core_conf_t  *ccf;
+ngx_delete_pidfile(ngx_cycle_t *cycle) {
+    u_char *name;
+    ngx_core_conf_t *ccf;
 
     ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->conf_ctx, ngx_core_module);
 
@@ -1108,7 +1103,8 @@ ngx_delete_pidfile(ngx_cycle_t *cycle)
 
     if (ngx_delete_file(name) == NGX_FILE_ERROR) {
         ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                      ngx_delete_file_n " \"%s\" failed", name);
+                      ngx_delete_file_n
+                              " \"%s\" failed", name);
     }
 }
 
@@ -1120,13 +1116,12 @@ ngx_delete_pidfile(ngx_cycle_t *cycle)
 µ÷ÓÃngx_os_signal_process()·¢ËÍÐÅºÅ£»
 */
 ngx_int_t
-ngx_signal_process(ngx_cycle_t *cycle, char *sig)
-{
-    ssize_t           n;
-    ngx_int_t         pid;
-    ngx_file_t        file;
-    ngx_core_conf_t  *ccf;
-    u_char            buf[NGX_INT64_LEN + 2];
+ngx_signal_process(ngx_cycle_t *cycle, char *sig) {
+    ssize_t n;
+    ngx_int_t pid;
+    ngx_file_t file;
+    ngx_core_conf_t *ccf;
+    u_char buf[NGX_INT64_LEN + 2];
 
     ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0, "signal process started");
 
@@ -1142,7 +1137,8 @@ ngx_signal_process(ngx_cycle_t *cycle, char *sig)
 
     if (file.fd == NGX_INVALID_FILE) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, ngx_errno,
-                      ngx_open_file_n " \"%s\" failed", file.name.data);
+                      ngx_open_file_n
+                              " \"%s\" failed", file.name.data);
         return 1;
     }
 
@@ -1150,7 +1146,8 @@ ngx_signal_process(ngx_cycle_t *cycle, char *sig)
 
     if (ngx_close_file(file.fd) == NGX_FILE_ERROR) {
         ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                      ngx_close_file_n " \"%s\" failed", file.name.data);
+                      ngx_close_file_n
+                              " \"%s\" failed", file.name.data);
     }
 
     if (n == NGX_ERROR) {
@@ -1174,8 +1171,7 @@ ngx_signal_process(ngx_cycle_t *cycle, char *sig)
 
 
 static ngx_int_t
-ngx_test_lockfile(u_char *file, ngx_log_t *log)
-{
+ngx_test_lockfile(u_char *file, ngx_log_t *log) {
 #if !(NGX_HAVE_ATOMIC_OPS)
     ngx_fd_t  fd;
 
@@ -1205,12 +1201,11 @@ ngx_test_lockfile(u_char *file, ngx_log_t *log)
 
 //ngx_reopen±êÖ¾Î»£¬Èç¹ûÎª1£¬Ôò±íÊ¾ÐèÒªÖØÐÂ´ò¿ªËùÓÐÎÄ¼þ
 void
-ngx_reopen_files(ngx_cycle_t *cycle, ngx_uid_t user)
-{
-    ngx_fd_t          fd;
-    ngx_uint_t        i;
-    ngx_list_part_t  *part;
-    ngx_open_file_t  *file;
+ngx_reopen_files(ngx_cycle_t *cycle, ngx_uid_t user) {
+    ngx_fd_t fd;
+    ngx_uint_t i;
+    ngx_list_part_t *part;
+    ngx_open_file_t *file;
 
     part = &cycle->open_files.part;
     file = part->elts;
@@ -1243,24 +1238,26 @@ ngx_reopen_files(ngx_cycle_t *cycle, ngx_uid_t user)
 
         if (fd == NGX_INVALID_FILE) {
             ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                          ngx_open_file_n " \"%s\" failed", file[i].name.data);
+                          ngx_open_file_n
+                                  " \"%s\" failed", file[i].name.data);
             continue;
         }
 
 #if !(NGX_WIN32)
         if (user != (ngx_uid_t) NGX_CONF_UNSET_UINT) {
-            ngx_file_info_t  fi;
+            ngx_file_info_t fi;
 
             if (ngx_file_info((const char *) file[i].name.data, &fi)
-                == NGX_FILE_ERROR)
-            {
+                == NGX_FILE_ERROR) {
                 ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                              ngx_file_info_n " \"%s\" failed",
+                              ngx_file_info_n
+                                      " \"%s\" failed",
                               file[i].name.data);
 
                 if (ngx_close_file(fd) == NGX_FILE_ERROR) {
                     ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                                  ngx_close_file_n " \"%s\" failed",
+                                  ngx_close_file_n
+                                          " \"%s\" failed",
                                   file[i].name.data);
                 }
 
@@ -1275,7 +1272,8 @@ ngx_reopen_files(ngx_cycle_t *cycle, ngx_uid_t user)
 
                     if (ngx_close_file(fd) == NGX_FILE_ERROR) {
                         ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                                      ngx_close_file_n " \"%s\" failed",
+                                      ngx_close_file_n
+                                              " \"%s\" failed",
                                       file[i].name.data);
                     }
 
@@ -1283,9 +1281,9 @@ ngx_reopen_files(ngx_cycle_t *cycle, ngx_uid_t user)
                 }
             }
 
-            if ((fi.st_mode & (S_IRUSR|S_IWUSR)) != (S_IRUSR|S_IWUSR)) {
+            if ((fi.st_mode & (S_IRUSR | S_IWUSR)) != (S_IRUSR | S_IWUSR)) {
 
-                fi.st_mode |= (S_IRUSR|S_IWUSR);
+                fi.st_mode |= (S_IRUSR | S_IWUSR);
 
                 if (chmod((const char *) file[i].name.data, fi.st_mode) == -1) {
                     ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
@@ -1293,7 +1291,8 @@ ngx_reopen_files(ngx_cycle_t *cycle, ngx_uid_t user)
 
                     if (ngx_close_file(fd) == NGX_FILE_ERROR) {
                         ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                                      ngx_close_file_n " \"%s\" failed",
+                                      ngx_close_file_n
+                                              " \"%s\" failed",
                                       file[i].name.data);
                     }
 
@@ -1309,7 +1308,8 @@ ngx_reopen_files(ngx_cycle_t *cycle, ngx_uid_t user)
 
             if (ngx_close_file(fd) == NGX_FILE_ERROR) {
                 ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                              ngx_close_file_n " \"%s\" failed",
+                              ngx_close_file_n
+                                      " \"%s\" failed",
                               file[i].name.data);
             }
 
@@ -1319,7 +1319,8 @@ ngx_reopen_files(ngx_cycle_t *cycle, ngx_uid_t user)
 
         if (ngx_close_file(file[i].fd) == NGX_FILE_ERROR) {
             ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
-                          ngx_close_file_n " \"%s\" failed",
+                          ngx_close_file_n
+                                  " \"%s\" failed",
                           file[i].name.data);
         }
 
@@ -1331,11 +1332,10 @@ ngx_reopen_files(ngx_cycle_t *cycle, ngx_uid_t user)
 
 
 ngx_shm_zone_t *
-ngx_shared_memory_add(ngx_conf_t *cf, ngx_str_t *name, size_t size, void *tag)
-{
-    ngx_uint_t        i;
-    ngx_shm_zone_t   *shm_zone;
-    ngx_list_part_t  *part;
+ngx_shared_memory_add(ngx_conf_t *cf, ngx_str_t *name, size_t size, void *tag) {
+    ngx_uint_t i;
+    ngx_shm_zone_t *shm_zone;
+    ngx_list_part_t *part;
 
     part = &cf->cycle->shared_memory.part;
     shm_zone = part->elts;
@@ -1356,16 +1356,15 @@ ngx_shared_memory_add(ngx_conf_t *cf, ngx_str_t *name, size_t size, void *tag)
         }
 
         if (ngx_strncmp(name->data, shm_zone[i].shm.name.data, name->len)
-            != 0)
-        {
+            != 0) {
             continue;
         }
 
         if (tag != shm_zone[i].tag) { //ÀýÈçproxy_cache abc, fastcgi abc£»Í¬Ê±ÅäÖÃ£¬¾Í»á±¨´í
             ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                            "the shared memory zone \"%V\" is "
-                            "already declared for a different use",
-                            &shm_zone[i].shm.name);
+                               "the shared memory zone \"%V\" is "
+                                       "already declared for a different use",
+                               &shm_zone[i].shm.name);
             return NULL;
         }
 
@@ -1375,9 +1374,9 @@ ngx_shared_memory_add(ngx_conf_t *cf, ngx_str_t *name, size_t size, void *tag)
 
         if (size && size != shm_zone[i].shm.size) {//Ö®Ç°ÒÑ¾­ÓÐÁËname¹²ÏíÄÚ´æ£¬µ«ÊÇÐÂÀ´µÄnameÐèÒª´´½¨µÄ¹²ÏíÄÚ´æ´óÐ¡ÓëÖ®Ç°µÄ²»ÏàµÈ£¬³åÍ»ÁË
             ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                            "the size %uz of shared memory zone \"%V\" "
-                            "conflicts with already declared size %uz",
-                            size, &shm_zone[i].shm.name, shm_zone[i].shm.size);
+                               "the size %uz of shared memory zone \"%V\" "
+                                       "conflicts with already declared size %uz",
+                               size, &shm_zone[i].shm.name, shm_zone[i].shm.size);
             return NULL;
         }
 
@@ -1406,11 +1405,10 @@ ngx_shared_memory_add(ngx_conf_t *cf, ngx_str_t *name, size_t size, void *tag)
 
 
 static void
-ngx_clean_old_cycles(ngx_event_t *ev)
-{
-    ngx_uint_t     i, n, found, live;
-    ngx_log_t     *log;
-    ngx_cycle_t  **cycle;
+ngx_clean_old_cycles(ngx_event_t *ev) {
+    ngx_uint_t i, n, found, live;
+    ngx_log_t *log;
+    ngx_cycle_t **cycle;
 
     log = ngx_cycle->log;
     ngx_temp_pool->log = log;

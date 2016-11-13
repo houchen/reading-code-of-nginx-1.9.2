@@ -471,7 +471,7 @@ ngx_http_mytest_upstream_handler(ngx_http_request_t *r)
         ngx_log_debugall(r->connection->log, 0, "yang test ############################MYTEST upstream gethostbyname error\n");
         return NGX_ERROR;
     }
-    
+     
     //访问上游服务器的80端口
     backendSockAddr.sin_family = AF_INET;
     backendSockAddr.sin_port = htons((in_port_t) 80);

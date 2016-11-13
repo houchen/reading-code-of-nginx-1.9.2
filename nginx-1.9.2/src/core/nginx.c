@@ -205,7 +205,7 @@ static char **ngx_os_environ;
 //8.打开listen的端口
 //9.所有模块初始化
 //10.启动worker进程
-//全书内容可以在http://book.2cto.com/201304/19606.html中查看，可以直接复制注释
+//全书内容可以在 http://book.2cto.com/201304/19606.html 中查看，可以直接复制注释
 int ngx_cdecl
 main(int argc, char *const *argv)
 {
