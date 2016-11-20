@@ -1,10 +1,10 @@
 /*
-server {} host¶¨Î»¹ı³Ì
+server {} hostå®šä½è¿‡ç¨‹
 
-µ±¿Í»§¶Ë½¨Á¢Á¬½Óºó£¬²¢·¢ËÍÇëÇóÊı¾İ¹ıÀ´ºó£¬ÔÚngx_http_create_requestÖĞ´Óngx_http_connection_t->conf_ctx»ñÈ¡ÕâÈı¸öÖµ£¬Ò²¾ÍÊÇ¸ù¾İ¿Í»§¶ËÁ¬½Ó
-±¾¶ËËù´¦IP:portËù¶ÔÓ¦µÄÄ¬ÈÏserver{}¿éÉÏÏÂÎÄ£¬Èç¹ûÊÇÒÔÏÂÇé¿ö:ip:portÏàÍ¬£¬µ¥ÔÚ²»Í¬µÄserver{}¿éÖĞ£¬ÄÇÃ´ÓĞ¿ÉÄÜ¿Í»§¶ËÇëÇó¹ıÀ´µÄÊ±ºòĞ¯´øµÄhost
-Í·²¿ÏîµÄserver_name²»ÔÚÄ¬ÈÏµÄserver{}ÖĞ£¬¶øÔÚÁíÍâµÄserver{}ÖĞ£¬ËùÒÔĞèÒªÍ¨¹ıngx_http_set_virtual_serverÖØĞÂ»ñÈ¡server{}ºÍlocation{}ÉÏÏÂÎÄÅäÖÃ
-ÀıÈç:
+å½“å®¢æˆ·ç«¯å»ºç«‹è¿æ¥åï¼Œå¹¶å‘é€è¯·æ±‚æ•°æ®è¿‡æ¥åï¼Œåœ¨ngx_http_create_requestä¸­ä»ngx_http_connection_t->conf_ctxè·å–è¿™ä¸‰ä¸ªå€¼ï¼Œä¹Ÿå°±æ˜¯æ ¹æ®å®¢æˆ·ç«¯è¿æ¥
+æœ¬ç«¯æ‰€å¤„IP:portæ‰€å¯¹åº”çš„é»˜è®¤server{}å—ä¸Šä¸‹æ–‡ï¼Œå¦‚æœæ˜¯ä»¥ä¸‹æƒ…å†µ:ip:portç›¸åŒï¼Œå•åœ¨ä¸åŒçš„server{}å—ä¸­ï¼Œé‚£ä¹ˆæœ‰å¯èƒ½å®¢æˆ·ç«¯è¯·æ±‚è¿‡æ¥çš„æ—¶å€™æºå¸¦çš„host
+å¤´éƒ¨é¡¹çš„server_nameä¸åœ¨é»˜è®¤çš„server{}ä¸­ï¼Œè€Œåœ¨å¦å¤–çš„server{}ä¸­ï¼Œæ‰€ä»¥éœ€è¦é€šè¿‡ngx_http_set_virtual_serveré‡æ–°è·å–server{}å’Œlocation{}ä¸Šä¸‹æ–‡é…ç½®
+ä¾‹å¦‚:
     server {  #1
         listen 1.1.1.1:80;
         server_name aaa
@@ -14,10 +14,10 @@ server {} host¶¨Î»¹ı³Ì
         listen 1.1.1.1:80;
         server_name bbb
     }
-    ÕâÁ½¸öserver{}Õ¼ÓÃÍ¬Ò»¸öngx_http_conf_addr_t£¬µ«ËûÃÇÓµÓĞÁ½¸ö²»Í¬µÄngx_http_core_srv_conf_t(´æÔÚÓÚngx_http_conf_addr_t->servers),
-    Õâ¸öÅäÖÃÔÚngx_http_init_connectionÖĞ»ñÈ¡Õâ¸öngx_http_port_t(1¸öngx_http_port_t¶ÔÓ¦Ò»¸öngx_http_conf_addr_t)°Ñngx_http_connection_t->conf_ctx
-    Ö¸Ïòngx_http_addr_conf_s->default_server,Ò²¾ÍÊÇÖ¸Ïò#1,È»ºóngx_http_create_requestÖĞ°Ñmain_conf srv_conf  loc_conf Ö¸Ïò#1,
-    µ«Èç¹ûÇëÇóĞĞµÄÍ·²¿µÄhost:bbb£¬ÄÇÃ´ĞèÒªÖØĞÂ»ñÈ¡¶ÔÓ¦µÄserver{} #2,¼ûngx_http_set_virtual_server->ngx_http_find_virtual_server
+    è¿™ä¸¤ä¸ªserver{}å ç”¨åŒä¸€ä¸ªngx_http_conf_addr_tï¼Œä½†ä»–ä»¬æ‹¥æœ‰ä¸¤ä¸ªä¸åŒçš„ngx_http_core_srv_conf_t(å­˜åœ¨äºngx_http_conf_addr_t->servers),
+    è¿™ä¸ªé…ç½®åœ¨ngx_http_init_connectionä¸­è·å–è¿™ä¸ªngx_http_port_t(1ä¸ªngx_http_port_tå¯¹åº”ä¸€ä¸ªngx_http_conf_addr_t)æŠŠngx_http_connection_t->conf_ctx
+    æŒ‡å‘ngx_http_addr_conf_s->default_server,ä¹Ÿå°±æ˜¯æŒ‡å‘#1,ç„¶ångx_http_create_requestä¸­æŠŠmain_conf srv_conf  loc_conf æŒ‡å‘#1,
+    ä½†å¦‚æœè¯·æ±‚è¡Œçš„å¤´éƒ¨çš„host:bbbï¼Œé‚£ä¹ˆéœ€è¦é‡æ–°è·å–å¯¹åº”çš„server{} #2,è§ngx_http_set_virtual_server->ngx_http_find_virtual_server
 
-	Èç¹ûÇëÇóÖĞ²»´øhost£¬ÔòÖ±½Ó#1ÎªÖªµÀserver{]
+	å¦‚æœè¯·æ±‚ä¸­ä¸å¸¦hostï¼Œåˆ™ç›´æ¥#1ä¸ºçŸ¥é“server{]
  */
