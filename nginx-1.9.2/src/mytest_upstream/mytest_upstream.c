@@ -461,7 +461,7 @@ ngx_http_mytest_upstream_handler(ngx_http_request_t *r)
         return NGX_ERROR;
     }
 
-    //这里的上游服务器就是www.google.com
+    //这里的上游服务器就是http://www.google.com
     static struct sockaddr_in backendSockAddr;
     struct hostent *pHost = gethostbyname((char*) "www.sina.com");
     if (pHost == NULL) {

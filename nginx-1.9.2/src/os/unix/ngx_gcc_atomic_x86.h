@@ -4,7 +4,9 @@
  * Copyright (C) Nginx, Inc.
  */
 
-
+//NGX_SMP在生成makefile的时候已经定义了，具体在configure脚本里搜
+//如果是对称多处理器（多核），就把NGX_SMP_LOCK 定义为lock; ,否则就是空
+//这是下面第47行的第一句汇编语句的前缀，多核机器会替换为lock
 #if (NGX_SMP)
 #define NGX_SMP_LOCK  "lock;"
 #else
@@ -40,9 +42,13 @@ ngx_atomic_cmp_set(ngx_atomic_t *lock, ngx_atomic_uint_t old,
 {
     u_char  res;
 
+//下面是两句内联汇编。百度下cmpxchgx和setx指令。
+//具体作用就是 原子性的异或比较lock和set的值
+//如果异或为0（上一句结果保存在eflags寄存器的zf标识位）
+//则把res设为1
     __asm__ volatile (
 
-         NGX_SMP_LOCK
+         NGX_SMP_LOCK //注意，这里在多核机器上定义为了lock; ，这个gcc汇编为第一条指令的前缀
     "    cmpxchgl  %3, %1;   "
     "    sete      %0;       "
 

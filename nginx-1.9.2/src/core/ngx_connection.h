@@ -13,28 +13,28 @@
 #include <ngx_core.h>
 
 
-typedef struct ngx_listening_s  ngx_listening_t;
+typedef struct ngx_listening_s ngx_listening_t;
 
 //初始化赋值等可以参考ngx_event_process_init
 //ngx_listening_t结构体代表着Nginx服务器监听的一个端口
 //实际上这些ngx_listening_s结构体是从 cycle->listening.elts中来的，见ngx_event_process_init
 struct ngx_listening_s { //初始化及赋值见ngx_http_add_listening
-    ngx_socket_t        fd; //socket套接字句柄   //赋值见ngx_open_listening_sockets
+    ngx_socket_t fd; //socket套接字句柄   //赋值见ngx_open_listening_sockets
 
-    struct sockaddr    *sockaddr; //监听sockaddr地址
-    socklen_t           socklen;    /* size of sockaddr */ //sockaddr地址长度
+    struct sockaddr *sockaddr; //监听sockaddr地址
+    socklen_t socklen;    /* size of sockaddr */ //sockaddr地址长度
 
     //存储IP地址的字符串addr_text最大长度，即它指定了addr_text所分配的内存大小
-    size_t              addr_text_max_len; //
+    size_t addr_text_max_len; //
     //如果listen 80;或者listen *:80;则该地址为0.0.0.0
-    ngx_str_t           addr_text;//以字符串形式存储IP地址和端口 例如 A.B.C.D:E     3.3.3.3:23  赋值见ngx_set_inherited_sockets
+    ngx_str_t addr_text;//以字符串形式存储IP地址和端口 例如 A.B.C.D:E     3.3.3.3:23  赋值见ngx_set_inherited_sockets
 
-    int                 type;//套接字类型。例如，当type是SOCK_STREAM时，表示TCP
+    int type;//套接字类型。例如，当type是SOCK_STREAM时，表示TCP
 
     //TCP实现监听时的backlog队列，它表示允许正在通过三次握手建立TCP连接但还没有任何进程开始处理的连接最大个数，默认NGX_LISTEN_BACKLOG
-    int                 backlog; //
-    int                 rcvbuf;//内核中对于这个套接字的接收缓冲区大小
-    int                 sndbuf;//内核中对于这个套接字的发送缓冲区大小
+    int backlog; //
+    int rcvbuf;//内核中对于这个套接字的接收缓冲区大小
+    int sndbuf;//内核中对于这个套接字的发送缓冲区大小
 #if (NGX_HAVE_KEEPALIVE_TUNABLE)
     int                 keepidle;
     int                 keepintvl;
@@ -43,60 +43,60 @@ struct ngx_listening_s { //初始化及赋值见ngx_http_add_listening
 
     /* handler of accepted connection */
     //当新的TCP accept连接成功建立后的处理方法  ngx_connection_handler_pt粪型的handler成员表示在这个监听端口上成功建立新的TCP连接后，就会回调handler方法
-    ngx_connection_handler_pt   handler; //赋值为ngx_http_init_connection，见ngx_http_add_listening。该handler在ngx_event_accept中执行
+    ngx_connection_handler_pt handler; //赋值为ngx_http_init_connection，见ngx_http_add_listening。该handler在ngx_event_accept中执行
     /*
     实际上框架并不使用servers指针，它更多是作为一个保留指针，目前主要用于HTTP或者mail等模块，用于保存当前监听端口对应着的所有主机名
     */ //lsopt.bind = 1;这里面存的是bind为1的配置才会有创建ngx_http_port_t
-    void               *servers;  /* array of ngx_http_in_addr_t  ngx_http_port_t, for example */ //赋值见ngx_http_init_listening，指向ngx_http_port_t结构
+    void *servers;  /* array of ngx_http_in_addr_t  ngx_http_port_t, for example */ //赋值见ngx_http_init_listening，指向ngx_http_port_t结构
 
     //log和logp都是可用的日志对象的指针
-    ngx_log_t           log; //见ngx_http_add_listening
-    ngx_log_t          *logp;
+    ngx_log_t log; //见ngx_http_add_listening
+    ngx_log_t *logp;
 
-    size_t              pool_size;//如果为新的TCP连接创建内存池，则内存池的初始大小应该是pool_size      见ngx_http_add_listening
+    size_t pool_size;//如果为新的TCP连接创建内存池，则内存池的初始大小应该是pool_size      见ngx_http_add_listening
     /* should be here because of the AcceptEx() preread */
-    
-    size_t              post_accept_buffer_size;
+
+    size_t post_accept_buffer_size;
     /* should be here because of the deferred accept */
     /*
     TCP_DEFER ACCEPT选项将在建立TCP连接成功且接收到用户的请求数据后，才向对监听套接字感兴趣的进程发送事件通知，而连接建立成功后，
     如果post_accept_timeout秒后仍然没有收到的用户数据，则内核直接丢弃连接
     */ //ls->post_accept_timeout = cscf->client_header_timeout;  "client_header_timeout"设置
-    ngx_msec_t          post_accept_timeout; //见ngx_http_add_listening
+    ngx_msec_t post_accept_timeout; //见ngx_http_add_listening
 
     /* 前一个ngx_listening_t结构，多个ngx_listening_t结构体之间由previous指针组成单链表 */
-    ngx_listening_t    *previous; //这个表示在热启动nginx进程的时候，在最新启动前的上一个nginx的所有listen信息
+    ngx_listening_t *previous; //这个表示在热启动nginx进程的时候，在最新启动前的上一个nginx的所有listen信息
     //当前监听句柄对应着的ngx_connection_t结构体
-    ngx_connection_t   *connection; 
+    ngx_connection_t *connection;
 
-    ngx_uint_t          worker;
+    ngx_uint_t worker;
 
     //下面这些标志位一般在ngx_init_cycle中初始化赋值
     /*
     标志位，为1则表示在当前监听句柄有效，且执行ngx- init—cycle时不关闭监听端口，为0时则正常关闭。该标志位框架代码会自动设置
     */
-    unsigned            open:1;
+    unsigned open:1;
     /*
     标志位，为1表示使用已有的ngx_cycle_t来初始化新的ngx_cycle_t结构体时，不关闭原先打开的监听端口，这对运行中升级程序很有用，
     remaln为o时，表示正常关闭曾经打开的监听端口。该标志位框架代码会自动设置，参见ngx_init_cycle方法
     */
-    unsigned            remain:1;
+    unsigned remain:1;
     /*
     标志位，为1时表示跳过设置当前ngx_listening_t结构体中的套接字，为o时正常初始化套接字。该标志位框架代码会自动设置
     */
-    unsigned            ignore:1;
+    unsigned ignore:1;
 
     //表示是否已经绑定。实际上目前该标志位没有使用
-    unsigned            bound:1;       /* already bound */
+    unsigned bound:1;       /* already bound */
     /* 表示当前监听句柄是否来自前一个进程（如升级Nginx程序），如果为1，则表示来自前一个进程。一般会保留之前已经设置好的套接字，不做改变 */
-    unsigned            inherited:1;   /* inherited from previous process */
-    unsigned            nonblocking_accept:1;  //目前未使用
-    unsigned            listen:1; //标志位，为1时表示当前结构体对应的套接字已经监听  赋值见ngx_open_listening_sockets
-    unsigned            nonblocking:1;//表素套接字是否阻塞，目前该标志位没有意义
-    unsigned            shared:1;    /* shared between threads or processes */ //目前该标志位没有意义
-    
+    unsigned inherited:1;   /* inherited from previous process */
+    unsigned nonblocking_accept:1;  //目前未使用
+    unsigned listen:1; //标志位，为1时表示当前结构体对应的套接字已经监听  赋值见ngx_open_listening_sockets
+    unsigned nonblocking:1;//表素套接字是否阻塞，目前该标志位没有意义
+    unsigned shared:1;    /* shared between threads or processes */ //目前该标志位没有意义
+
     //标志位，为1时表示Nginx会将网络地址转变为字符串形式的地址  见addr_text 赋值见ngx_http_add_listening,当在ngx_create_listening把listen的IP地址转换为字符串地址后置1
-    unsigned            addr_ntop:1;
+    unsigned addr_ntop:1;
 #if (NGX_HAVE_INET6 && defined IPV6_V6ONLY)
     unsigned            ipv6only:1;
 #endif
@@ -104,7 +104,7 @@ struct ngx_listening_s { //初始化及赋值见ngx_http_add_listening
     unsigned            reuseport:1;
     unsigned            add_reuseport:1;
 #endif
-    unsigned            keepalive:2;
+    unsigned keepalive:2;
 
 #if (NGX_HAVE_DEFERRED_ACCEPT)
     unsigned            deferred_accept:1;//SO_ACCEPTFILTER(freebsd所用)设置  TCP_DEFER_ACCEPT(LINUX系统所用)
@@ -127,11 +127,11 @@ struct ngx_listening_s { //初始化及赋值见ngx_http_add_listening
 
 //本连接记录日志时的级别，它占用了3位，取值范围是0-7，但实际上目前只定义了5个值。见ngx_connection_s->log_error
 typedef enum {
-     NGX_ERROR_ALERT = 0,
-     NGX_ERROR_ERR,
-     NGX_ERROR_INFO,
-     NGX_ERROR_IGNORE_ECONNRESET,
-     NGX_ERROR_IGNORE_EINVAL
+    NGX_ERROR_ALERT = 0,
+    NGX_ERROR_ERR,
+    NGX_ERROR_INFO,
+    NGX_ERROR_IGNORE_ECONNRESET,
+    NGX_ERROR_IGNORE_EINVAL
 } ngx_connection_log_error_e;
 
 /*
@@ -182,16 +182,16 @@ tcp_nopush
 
 //表示如何使用TCP的nodelay特性
 typedef enum {
-     NGX_TCP_NODELAY_UNSET = 0,
-     NGX_TCP_NODELAY_SET,
-     NGX_TCP_NODELAY_DISABLED
+    NGX_TCP_NODELAY_UNSET = 0,
+    NGX_TCP_NODELAY_SET,
+    NGX_TCP_NODELAY_DISABLED
 } ngx_connection_tcp_nodelay_e;
 
 //表示如何使用TCP的nopush特性
 typedef enum {
-     NGX_TCP_NOPUSH_UNSET = 0,
-     NGX_TCP_NOPUSH_SET,
-     NGX_TCP_NOPUSH_DISABLED
+    NGX_TCP_NOPUSH_UNSET = 0,
+    NGX_TCP_NOPUSH_SET,
+    NGX_TCP_NOPUSH_DISABLED
 } ngx_connection_tcp_nopush_e;
 
 
@@ -228,78 +228,78 @@ struct ngx_connection_s {  //cycle->read_events和cycle->write_events这两个数组存
 
     //在服务器端accept客户端连接成功(ngx_event_accept)后，会通过ngx_get_connection从连接池获取一个ngx_connection_t结构，也就是每个客户端连接对于一个ngx_connection_t结构，
     //并且为其分配一个ngx_http_connection_t结构，ngx_connection_t->data = ngx_http_connection_t，见ngx_http_init_connection
-     */ 
- /*
- 在liten，accep(ngx_event_accept)接收到新的客户端连接的时候:这里面存储有客户端建立连接过来后(ngx_http_connection_t)，本端接收连接的server{}所在
- server_name配置信息以及该ip:port对应的上下文信息存在着个里面当建立连接后开辟ngx_http_connection_t结构，这里面存储该服务器端
- ip:port所在server{}上下文配置信息，和server_name信息等，然后让ngx_connection_t->data指向该结构，这样就可以通过ngx_connection_t->data
- 获取到服务器端的serv loc 等配置信息以及该server{}中的server_name信息见ngx_http_init_connection
+     */
+    /*
+    在liten，accep(ngx_event_accept)接收到新的客户端连接的时候:这里面存储有客户端建立连接过来后(ngx_http_connection_t)，本端接收连接的server{}所在
+    server_name配置信息以及该ip:port对应的上下文信息存在着个里面当建立连接后开辟ngx_http_connection_t结构，这里面存储该服务器端
+    ip:port所在server{}上下文配置信息，和server_name信息等，然后让ngx_connection_t->data指向该结构，这样就可以通过ngx_connection_t->data
+    获取到服务器端的serv loc 等配置信息以及该server{}中的server_name信息见ngx_http_init_connection
 
- 当接收到客户端的第一个请求数据的时候，在ngx_http_wait_request_handler中会重新让data指向新创建的ngx_http_request_t结构，之前data指向的
- ngx_http_connection_t结构，从新用ngx_http_request_t->connection指向该ngx_http_connection_t
- */  //上层父请求r的data指向第一个r下层的子请求，例如第二层的r->connection->data指向其第三层的第一个创建的子请求r，c->data = sr见ngx_http_subrequest
-    void               *data;//listen过程中，指向原始请求ngx_http_connection_t(ngx_http_init_connection)  
+    当接收到客户端的第一个请求数据的时候，在ngx_http_wait_request_handler中会重新让data指向新创建的ngx_http_request_t结构，之前data指向的
+    ngx_http_connection_t结构，从新用ngx_http_request_t->connection指向该ngx_http_connection_t
+    */  //上层父请求r的data指向第一个r下层的子请求，例如第二层的r->connection->data指向其第三层的第一个创建的子请求r，c->data = sr见ngx_http_subrequest
+    void *data;//listen过程中，指向原始请求ngx_http_connection_t(ngx_http_init_connection)
 //如果是文件异步i/o中的ngx_event_aio_t，则它来自ngx_event_aio_t->ngx_event_t(只有读),如果是网络事件中的event,则为ngx_connection_s中的event(包括读和写)
-    ngx_event_t        *read;//连接对应的读事件   赋值在ngx_event_process_init
-    ngx_event_t        *write; //连接对应的写事件  赋值在ngx_event_process_init  一般在ngx_handle_write_event中添加些事件
+    ngx_event_t *read;//连接对应的读事件   赋值在ngx_event_process_init
+    ngx_event_t *write; //连接对应的写事件  赋值在ngx_event_process_init  一般在ngx_handle_write_event中添加些事件
 
-    ngx_socket_t        fd;//套接字句柄
+    ngx_socket_t fd;//套接字句柄
 
     //服务端通过ngx_http_wait_request_handler读取数据
-    ngx_recv_pt         recv; //直接接收网络字符流的方法  见ngx_event_accept或者ngx_http_upstream_connect   赋值为ngx_os_io  在接收到客户端连接或者向上游服务器发起连接后赋值
-    ngx_send_pt         send; //直接发送网络字符流的方法  见ngx_event_accept或者ngx_http_upstream_connect   赋值为ngx_os_io  在接收到客户端连接或者向上游服务器发起连接后赋值
+    ngx_recv_pt recv; //直接接收网络字符流的方法  见ngx_event_accept或者ngx_http_upstream_connect   赋值为ngx_os_io  在接收到客户端连接或者向上游服务器发起连接后赋值
+    ngx_send_pt send; //直接发送网络字符流的方法  见ngx_event_accept或者ngx_http_upstream_connect   赋值为ngx_os_io  在接收到客户端连接或者向上游服务器发起连接后赋值
 
     //以ngx_chain_t链表为参数来接收网络字符流的方法  ngx_recv_chain
-    ngx_recv_chain_pt   recv_chain;  //赋值见ngx_event_accept     ngx_event_pipe_read_upstream中执行
+    ngx_recv_chain_pt recv_chain;  //赋值见ngx_event_accept     ngx_event_pipe_read_upstream中执行
     //以ngx_chain_t链表为参数来发送网络字符流的方法    ngx_send_chain
-    ngx_send_chain_pt   send_chain; //赋值见ngx_event_accept   ngx_http_write_filter和ngx_chain_writer中执行
+    ngx_send_chain_pt send_chain; //赋值见ngx_event_accept   ngx_http_write_filter和ngx_chain_writer中执行
 
     //这个连接对应的ngx_listening_t监听对象,通过listen配置项配置，此连接由listening监听端口的事件建立,赋值在ngx_event_process_init
     //接收到客户端连接后会冲连接池分配一个ngx_connection_s结构，其listening成员指向服务器接受该连接的listen信息结构，见ngx_event_accept
-    ngx_listening_t    *listening; //实际上是从cycle->listening.elts中的一个ngx_listening_t   
+    ngx_listening_t *listening; //实际上是从cycle->listening.elts中的一个ngx_listening_t
 
-    off_t               sent;//这个连接上已经发送出去的字节数 //ngx_linux_sendfile_chain和ngx_writev_chain没发送多少字节就加多少字节
+    off_t sent;//这个连接上已经发送出去的字节数 //ngx_linux_sendfile_chain和ngx_writev_chain没发送多少字节就加多少字节
 
-    ngx_log_t          *log;//可以记录日志的ngx_log_t对象 其实就是ngx_listening_t中获取的log //赋值见ngx_event_accept
+    ngx_log_t *log;//可以记录日志的ngx_log_t对象 其实就是ngx_listening_t中获取的log //赋值见ngx_event_accept
 
     /*
     内存池。一般在accept -个新连接时，会创建一个内存池，而在这个连接结束时会销毁内存池。注意，这里所说的连接是指成功建立的
     TCP连接，所有的ngx_connection_t结构体都是预分配的。这个内存池的大小将由上面的listening监听对象中的pool_size成员决定
      */
-    ngx_pool_t         *pool; //在accept返回成功后创建poll,见ngx_event_accept， 连接上游服务区的时候在ngx_http_upstream_connect创建
+    ngx_pool_t *pool; //在accept返回成功后创建poll,见ngx_event_accept， 连接上游服务区的时候在ngx_http_upstream_connect创建
 
-    struct sockaddr    *sockaddr; //连接客户端的sockaddr结构体  客户端的，本端的为下面的local_sockaddr 赋值见ngx_event_accept
-    socklen_t           socklen; //sockaddr结构体的长度  //赋值见ngx_event_accept
-    ngx_str_t           addr_text; //连接客户端字符串形式的IP地址  
+    struct sockaddr *sockaddr; //连接客户端的sockaddr结构体  客户端的，本端的为下面的local_sockaddr 赋值见ngx_event_accept
+    socklen_t socklen; //sockaddr结构体的长度  //赋值见ngx_event_accept
+    ngx_str_t addr_text; //连接客户端字符串形式的IP地址
 
-    ngx_str_t           proxy_protocol_addr;
+    ngx_str_t proxy_protocol_addr;
 
 #if (NGX_SSL)
     ngx_ssl_connection_t  *ssl;
 #endif
 
     //本机的监听端口对应的sockaddr结构体，也就是listening监听对象中的sockaddr成员
-    struct sockaddr    *local_sockaddr; //赋值见ngx_event_accept
-    socklen_t           local_socklen;
+    struct sockaddr *local_sockaddr; //赋值见ngx_event_accept
+    socklen_t local_socklen;
 
     /*
     用于接收、缓存客户端发来的字符流，每个事件消费模块可自由决定从连接池中分配多大的空间给buffer这个接收缓存字段。
     例如，在HTTP模块中，它的大小决定于client_header_buffer_size配置项
      */
-    ngx_buf_t          *buffer; //ngx_http_request_t->header_in指向该缓冲去
+    ngx_buf_t *buffer; //ngx_http_request_t->header_in指向该缓冲去
 
     /*
     该字段用来将当前连接以双向链表元素的形式添加到ngx_cycle_t核心结构体的reusable_connections_queue双向链表中，表示可以重用的连接
      */
-    ngx_queue_t         queue;
+    ngx_queue_t queue;
 
     /*
     连接使用次数。ngx_connection t结构体每次建立一条来自客户端的连接，或者用于主动向后端服务器发起连接时（ngx_peer_connection_t也使用它），
     number都会加l
      */
-    ngx_atomic_uint_t   number; //这个应该是记录当前连接是整个连接中的第几个连接，见ngx_event_accept  ngx_event_connect_peer
+    ngx_atomic_uint_t number; //这个应该是记录当前连接是整个连接中的第几个连接，见ngx_event_accept  ngx_event_connect_peer
 
-    ngx_uint_t          requests; //处理的请求次数
+    ngx_uint_t requests; //处理的请求次数
 
     /*
     缓存中的业务类型。任何事件消费模块都可以自定义需要的标志位。这个buffered字段有8位，最多可以同时表示8个不同的业务。第三方模
@@ -318,7 +318,7 @@ struct ngx_connection_s {  //cycle->read_events和cycle->write_events这两个数组存
     Nginx会一直认为有HTTP模块还需要处理这个请求，必须等待HTTP模块将低4位全置为0才会正常结束请求。检查低4位的宏如下：
         #define NGX_LOWLEVEL_BUFFERED  OxOf
      */
-    unsigned            buffered:8; //不为0，表示有数据没有发送完毕，ngx_http_request_t->out中还有未发送的报文
+    unsigned buffered:8; //不为0，表示有数据没有发送完毕，ngx_http_request_t->out中还有未发送的报文
 
     /*
      本连接记录日志时的级别，它占用了3位，取值范围是0-7，但实际上目前只定义了5个值，由ngx_connection_log_error_e枚举表示，如下：
@@ -331,42 +331,42 @@ struct ngx_connection_s {  //cycle->read_events和cycle->write_events这两个数组存
      }
      ngx_connection_log_error_e ;
      */
-    unsigned            log_error:3;     /* ngx_connection_log_error_e */
+    unsigned log_error:3;     /* ngx_connection_log_error_e */
 
     //标志位，为1时表示不期待字符流结束，目前无意义
-    unsigned            unexpected_eof:1;
+    unsigned unexpected_eof:1;
 
     //每次处理完一个客户端请求后，都会ngx_add_timer(rev, c->listening->post_accept_timeout);
     /*读客户端连接的数据，在ngx_http_init_connection(ngx_connection_t *c)中的ngx_add_timer(rev, c->listening->post_accept_timeout)把读事件添加到定时器中，如果超时则置1
       每次ngx_unix_recv把内核数据读取完毕后，在重新启动add epoll，等待新的数据到来，同时会启动定时器ngx_add_timer(rev, c->listening->post_accept_timeout);
       如果在post_accept_timeout这么长事件内没有数据到来则超时，开始处理关闭TCP流程*/
-      //当ngx_event_t->timedout置1的时候，该置也同时会置1，参考ngx_http_process_request_line  ngx_http_process_request_headers
-      //在ngx_http_free_request中如果超时则会设置SO_LINGER来减少time_wait状态
-    unsigned            timedout:1; //标志位，为1时表示连接已经超时,也就是过了post_accept_timeout多少秒还没有收到客户端的请求
-    unsigned            error:1; //标志位，为1时表示连接处理过程中出现错误
+    //当ngx_event_t->timedout置1的时候，该置也同时会置1，参考ngx_http_process_request_line  ngx_http_process_request_headers
+    //在ngx_http_free_request中如果超时则会设置SO_LINGER来减少time_wait状态
+    unsigned timedout:1; //标志位，为1时表示连接已经超时,也就是过了post_accept_timeout多少秒还没有收到客户端的请求
+    unsigned error:1; //标志位，为1时表示连接处理过程中出现错误
 
     /*
      标志位，为1时表示连接已经销毁。这里的连接指是的TCP连接，而不是ngx_connection t结构体。当destroyed为1时，ngx_connection_t结
      构体仍然存在，但其对应的套接字、内存池等已经不可用
      */
-    unsigned            destroyed:1; //ngx_http_close_connection中置1
+    unsigned destroyed:1; //ngx_http_close_connection中置1
 
-    unsigned            idle:1; //为1时表示连接处于空闲状态，如keepalive请求中丽次请求之间的状态
-    unsigned            reusable:1; //为1时表示连接可重用，它与上面的queue字段是对应使用的
-    unsigned            close:1; //为1时表示连接关闭
+    unsigned idle:1; //为1时表示连接处于空闲状态，如keepalive请求中丽次请求之间的状态
+    unsigned reusable:1; //为1时表示连接可重用，它与上面的queue字段是对应使用的
+    unsigned close:1; //为1时表示连接关闭
     /*
         和后端的ngx_connection_t在ngx_event_connect_peer这里置为1，但在ngx_http_upstream_connect中c->sendfile &= r->connection->sendfile;，
         和客户端浏览器的ngx_connextion_t的sendfile需要在ngx_http_update_location_config中判断，因此最终是由是否在configure的时候是否有加
         sendfile选项来决定是置1还是置0
      */
     //赋值见ngx_http_update_location_config
-    unsigned            sendfile:1; //标志位，为1时表示正在将文件中的数据发往连接的另一端
+    unsigned sendfile:1; //标志位，为1时表示正在将文件中的数据发往连接的另一端
 
     /*
     标志位，如果为1，则表示只有在连接套接字对应的发送缓冲区必须满足最低设置的大小阅值时，事件驱动模块才会分发该事件。这与上文
     介绍过的ngx_handle_write_event方法中的lowat参数是对应的
      */
-    unsigned            sndlowat:1; //ngx_send_lowat
+    unsigned sndlowat:1; //ngx_send_lowat
 
     /*
     标志位，表示如何使用TCP的nodelay特性。它的取值范围是下面这个枚举类型ngx_connection_tcp_nodelay_e。
@@ -376,7 +376,7 @@ struct ngx_connection_s {  //cycle->read_events和cycle->write_events这两个数组存
     NGX_TCP_NODELAY_DISABLED
     )  ngx_connection_tcp_nodelay_e;
      */
-    unsigned            tcp_nodelay:2;   /* ngx_connection_tcp_nodelay_e */ //域套接字默认是disable的,
+    unsigned tcp_nodelay:2;   /* ngx_connection_tcp_nodelay_e */ //域套接字默认是disable的,
 
     /*
     标志位，表示如何使用TCP的nopush特性。它的取值范围是下面这个枚举类型ngx_connection_tcp_nopush_e：
@@ -386,9 +386,9 @@ struct ngx_connection_s {  //cycle->read_events和cycle->write_events这两个数组存
     NGX_TCP_NOPUSH_DISABLED
     )  ngx_connection_tcp_nopush_e
      */ //域套接字默认是disable的,
-    unsigned            tcp_nopush:2;    /* ngx_connection_tcp_nopush_e */
+    unsigned tcp_nopush:2;    /* ngx_connection_tcp_nopush_e */
 
-    unsigned            need_last_buf:1;
+    unsigned need_last_buf:1;
 
 #if (NGX_HAVE_IOCP)
     unsigned            accept_context_updated:1;
@@ -424,18 +424,27 @@ struct ngx_connection_s {  //cycle->read_events和cycle->write_events这两个数组存
 
 
 ngx_listening_t *ngx_create_listening(ngx_conf_t *cf, void *sockaddr,
-    socklen_t socklen);
+                                      socklen_t socklen);
+
 ngx_int_t ngx_clone_listening(ngx_conf_t *cf, ngx_listening_t *ls);
+
 ngx_int_t ngx_set_inherited_sockets(ngx_cycle_t *cycle);
+
 ngx_int_t ngx_open_listening_sockets(ngx_cycle_t *cycle);
+
 void ngx_configure_listening_sockets(ngx_cycle_t *cycle);
+
 void ngx_close_listening_sockets(ngx_cycle_t *cycle);
+
 void ngx_close_connection(ngx_connection_t *c);
+
 ngx_int_t ngx_connection_local_sockaddr(ngx_connection_t *c, ngx_str_t *s,
-    ngx_uint_t port);
+                                        ngx_uint_t port);
+
 ngx_int_t ngx_connection_error(ngx_connection_t *c, ngx_err_t err, char *text);
 
 ngx_connection_t *ngx_get_connection(ngx_socket_t s, ngx_log_t *log);
+
 void ngx_free_connection(ngx_connection_t *c);
 
 void ngx_reusable_connection(ngx_connection_t *c, ngx_uint_t reusable);
